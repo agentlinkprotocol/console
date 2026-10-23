@@ -2,7 +2,9 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# arm64 builds run under QEMU on CI and are slow: be patient with the registry
+RUN npm config set fetch-retries 5 && npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-timeout 600000 \
+    && npm ci --no-audit --no-fund
 
 FROM node:22-alpine AS build
 WORKDIR /app
