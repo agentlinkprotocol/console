@@ -18,7 +18,7 @@ server-side only, for the Explorer's searches.
 
 ## Branches and releases
 
-Work on `develop`, open a pull request to `main` (`ci`: typecheck, lint, build, every page renders in demo mode,
+Work on `develop`, open a pull request to `main` (`ci` runs on the pull request only: typecheck, lint, build, every page renders in demo mode,
 Docker image builds). Merging into `main` pushes `ghcr.io/agentlinkprotocol/console:latest` (and `:vX.Y.Z`) and
 tags the release; connect the repository to Vercel for automatic hosting of `main`.
 
