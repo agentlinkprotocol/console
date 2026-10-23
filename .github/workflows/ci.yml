@@ -1,0 +1,41 @@
+name: ci
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [develop]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: Demo mode renders every page
+        run: |
+          (npm start -- --port 3100 &) ; for i in $(seq 1 30); do curl -fs http://127.0.0.1:3100/healthz >/dev/null 2>&1 && break || sleep 1; done
+          for p in / /nodes /zones /ledger /explorer /api/stats; do curl -fsS "http://127.0.0.1:3100$p" >/dev/null && echo "ok $p"; done
+  docker:
+    name: docker image builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
